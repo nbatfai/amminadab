@@ -141,9 +141,9 @@ public:
 
         SPOTriplets tv = nlp.sentence2triplets ( sentence.c_str() );
 
-#ifndef INCREMENTAL_CACHE	
+#ifndef INCREMENTAL_CACHE
         vi << tv;
-#endif	
+#endif
 
         if ( tv.size() )
           {
@@ -293,6 +293,11 @@ public:
   double get_min_reward ( void ) const
   {
     return vi.get_min_reward();
+  }
+
+  void debug_tree ( void )
+  {
+    vi.debug_tree ( );
   }
 
 private:
@@ -625,6 +630,11 @@ private:
       return ql.reward();
     }
 
+    void debug_tree ( void )
+    {
+      ql.debug_tree ( );
+    }
+
     void save ( std::string &fname )
     {
       ql.save ( fname );
@@ -641,6 +651,8 @@ private:
         {
           program.pop();
         }
+
+      ql.clear();
     }
 
     void set_N_e ( int N_e )

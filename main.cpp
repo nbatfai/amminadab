@@ -471,6 +471,7 @@ int main ( int argc, char **argv )
                 {
                   samuHasAlreadyLearned += 7;
                   reinforcement = 0;
+		  samu.debug_tree();
                 }
             }
 

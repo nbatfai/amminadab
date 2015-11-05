@@ -320,7 +320,7 @@ typedef std::string Feeling;
 class QL
 {
 public:
-  QL (int nrows)
+  QL ( int nrows ) :tree ( &root )
   {
 #ifdef FEELINGS
     std::random_device init;
@@ -356,7 +356,7 @@ public:
     for ( std::map<Feeling, Perceptron*>::iterator it=prcps_f.begin(); it!=prcps_f.end(); ++it )
       delete it->second;
 #endif
-    
+
   }
 
   double f ( double u, int n )
@@ -413,6 +413,88 @@ public:
     return min_q_spap;
   }
 #endif
+
+
+  SPOTriplet argmax_ap_f_lzw ( std::string prg, double image[] )
+  {
+    double min_f = -std::numeric_limits<double>::max();
+    SPOTriplet ap;
+
+#ifdef QNN_DEBUG_BREL
+    double sum {0.0}, rel;
+    double a = std::numeric_limits<double>::max(), b = -std::numeric_limits<double>::max();
+#endif
+
+    std::map<SPOTriplet, TripletNode*> children = tree->getChildren();
+
+    if ( children.size() > 0 )
+
+      for ( std::map<SPOTriplet, TripletNode*>::iterator it=children.begin(); it!=children.end(); ++it )
+        {
+          /*
+              for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
+                {
+          */
+          //double  q_spap = ( * ( it->second ) ) ( image );
+          double  q_spap = ( * ( prcps[it->first] ) ) ( image );
+          double explor = f ( q_spap, frqs[it->first][prg] );
+
+#ifdef QNN_DEBUG_BREL
+          sum += q_spap;
+
+          if ( q_spap > b )
+            b = q_spap;
+
+          if ( q_spap < a )
+            a = q_spap;
+#endif
+
+          if ( explor >= min_f )
+            {
+              min_f = explor;
+              ap = it->first;
+#ifdef QNN_DEBUG_BREL
+              rel = q_spap;
+#endif
+            }
+        }
+
+    else
+
+      for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
+        {
+          double  q_spap = ( * ( it->second ) ) ( image );
+          double explor = f ( q_spap, frqs[it->first][prg] );
+
+#ifdef QNN_DEBUG_BREL
+          sum += q_spap;
+
+          if ( q_spap > b )
+            b = q_spap;
+
+          if ( q_spap < a )
+            a = q_spap;
+#endif
+
+          if ( explor >= min_f )
+            {
+              min_f = explor;
+              ap = it->first;
+#ifdef QNN_DEBUG_BREL
+              rel = q_spap;
+#endif
+            }
+        }
+
+
+
+#ifdef QNN_DEBUG
+    relevance = ( rel - sum/ ( ( double ) prcps.size() ) ) / ( b-a );
+#endif
+
+    return ap;
+  }
+
 
   SPOTriplet argmax_ap_f ( std::string prg, double image[] )
   {
@@ -503,6 +585,8 @@ public:
   SPOTriplet operator() ( SPOTriplet triplet, std::string prg, double image[] )
   {
 
+    *this << triplet;
+
     // Here 'triplet' will also be used as a simplified state in further developments
     // s' = triplet
     // r' = reward
@@ -523,9 +607,9 @@ public:
 //        prcps[triplet] = new Perceptron ( 3, 10*3, 4,  1 ); //exp.a1 // 302
         prcps[triplet] = new Perceptron ( 5, 10*3, 16, 8, 4,  1 );
 
-#elif FOUR_TIMES	      
-        prcps[triplet] = new Perceptron ( 3, 2*10*2*80, 32,  1 ); 
-	
+#elif FOUR_TIMES
+        prcps[triplet] = new Perceptron ( 3, 2*10*2*80, 32,  1 );
+
 #elif CHARACTER_CONSOLE
         prcps[triplet] = new Perceptron ( 3, 10*80, 32,  1 ); //exp.a1 // 302
 
@@ -583,7 +667,7 @@ public:
 #endif
 
 #ifdef NN_DEBUG
-	    std::cerr << "### "
+            std::cerr << "### "
                       << q_q_s_a - nn_q_s_a
                       << " "
                       << q_q_s_a
@@ -600,7 +684,7 @@ public:
                       << std::endl;
 #endif
 #endif
-		      
+
             if ( std::fabs ( old_q_q_s_a_nn_q_s_a - ( q_q_s_a - nn_q_s_a ) ) <= 0.0000000001 )
               break;
 
@@ -608,7 +692,8 @@ public:
 
           }
 
-        action = argmax_ap_f ( prg, image );
+//        action = argmax_ap_f ( prg, image );
+        action = argmax_ap_f_lzw ( prg, image );
 #ifdef FEELINGS
         feeling = argmax_ap_f_f ( prg, image );
 #endif
@@ -738,6 +823,20 @@ public:
           }
       }
 
+  }
+
+  void clear ( void )
+  {
+    tree = &root;
+    depth = 0;
+  }
+
+  void debug_tree ( void )
+  {
+    int save_depth = depth;
+    depth = 0;
+    debug_tree ( &root, std::cerr );
+    depth = save_depth;
   }
 
   double sigmoid ( int n )
@@ -915,8 +1014,101 @@ public:
     return min_reward;
   }
 
+  void operator<< ( SPOTriplet triplet )
+  {
+    TripletNode *p = tree->getChild ( triplet );
+    if ( !p )
+      {
+        if ( depth < 7 )
+          {
+            TripletNode *tn = new TripletNode ( triplet );
+            tree->setChild ( triplet, tn );
+            tree = &root;
+            depth = 0;
+          }
+        else
+          {
+            tree = &root;
+            depth = 0;
+            *this << triplet;
+          }
+      }
+    else
+      {
+        tree = p;
+        ++depth;
+      }
+  }
 
 private:
+
+  class TripletNode
+  {
+  public:
+    TripletNode ( )
+    {
+    };
+    TripletNode ( SPOTriplet triplet ) :triplet ( triplet )
+    {
+    };
+    ~TripletNode ()
+    {
+    };
+    void setChild ( SPOTriplet &triplet, TripletNode * newChild )
+    {
+      children[triplet] = newChild;
+    }
+    TripletNode  *getChild ( SPOTriplet &triplet ) const
+    {
+      std::map<SPOTriplet, TripletNode*>::const_iterator it = children.find ( triplet );
+
+      if ( it != children.end() )
+        return ( *it ).second;
+      else
+        return nullptr;
+    }
+    std::map<SPOTriplet, TripletNode*> & getChildren ()
+    {
+      return children;
+    }    
+    SPOTriplet getTriplet () const
+    {
+      return triplet;
+    }
+
+  private:
+    TripletNode ( const TripletNode & );
+    TripletNode & operator= ( const TripletNode & );
+    SPOTriplet triplet;
+    std::map<SPOTriplet, TripletNode*> children;
+  };
+
+  TripletNode root;
+  TripletNode *tree;
+  int depth {0};
+
+  void debug_tree ( TripletNode * node, std::ostream & os )
+  {
+    if ( node != nullptr )
+      {
+        ++depth;
+        std::map<SPOTriplet, TripletNode*> children = node->getChildren();
+
+        for ( std::map<SPOTriplet, TripletNode*>::iterator it=children.begin(); it!=children.end(); ++it )
+          debug_tree ( ( *it ).second, os );
+
+        for ( int i {0}; i < depth; ++i )
+          if ( i == ( 2* ( depth-1 ) ) /2 )
+            os  << depth - 1;
+          else
+            os << "__";
+
+        os << "__ "
+           << node->getTriplet ()
+           << std::endl;
+        --depth;
+      }
+  }
 
   int N_e = 30;
 
