@@ -322,6 +322,7 @@ class QL
 public:
   QL ( int nrows ) :tree ( &root )
   {
+
 #ifdef FEELINGS
     std::random_device init;
     std::default_random_engine gen {init() };
@@ -427,66 +428,72 @@ public:
 
     std::map<SPOTriplet, TripletNode*> children = tree->getChildren();
 
-    if ( children.size() > 0 )
+    int rN = children.size();
 
-      for ( std::map<SPOTriplet, TripletNode*>::iterator it=children.begin(); it!=children.end(); ++it )
-        {
-          /*
-              for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
-                {
-          */
-          //double  q_spap = ( * ( it->second ) ) ( image );
-          double  q_spap = ( * ( prcps[it->first] ) ) ( image );
-          double explor = f ( q_spap, frqs[it->first][prg] );
+    //std::uniform_int_distribution<int> zdist ( 0, rN+1+rN/10 );
+    //std::uniform_int_distribution<int> zdist ( 0, 100 );
+    //if ( zdist ( zgen ) < rN )
+    //if ( rN && zdist ( zgen ) < 95)
+    if ( rN )
+      {
+        for ( std::map<SPOTriplet, TripletNode*>::iterator it=children.begin(); it!=children.end(); ++it )
+          {
+            /*
+                for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
+                  {
+            */
+            //double  q_spap = ( * ( it->second ) ) ( image );
+            double  q_spap = ( * ( prcps[it->first] ) ) ( image );
+            double explor = f ( q_spap, frqs[it->first][prg] );
 
 #ifdef QNN_DEBUG_BREL
-          sum += q_spap;
+            sum += q_spap;
 
-          if ( q_spap > b )
-            b = q_spap;
+            if ( q_spap > b )
+              b = q_spap;
 
-          if ( q_spap < a )
-            a = q_spap;
+            if ( q_spap < a )
+              a = q_spap;
 #endif
 
-          if ( explor >= min_f )
-            {
-              min_f = explor;
-              ap = it->first;
+            if ( explor >= min_f )
+              {
+                min_f = explor;
+                ap = it->first;
 #ifdef QNN_DEBUG_BREL
-              rel = q_spap;
+                rel = q_spap;
 #endif
-            }
-        }
-
+              }
+          }
+      }
     else
-
-      for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
-        {
-          double  q_spap = ( * ( it->second ) ) ( image );
-          double explor = f ( q_spap, frqs[it->first][prg] );
+      {
+        for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
+          {
+            double  q_spap = ( * ( it->second ) ) ( image );
+            double explor = f ( q_spap, frqs[it->first][prg] );
 
 #ifdef QNN_DEBUG_BREL
-          sum += q_spap;
+            sum += q_spap;
 
-          if ( q_spap > b )
-            b = q_spap;
+            if ( q_spap > b )
+              b = q_spap;
 
-          if ( q_spap < a )
-            a = q_spap;
+            if ( q_spap < a )
+              a = q_spap;
 #endif
 
-          if ( explor >= min_f )
-            {
-              min_f = explor;
-              ap = it->first;
+            if ( explor >= min_f )
+              {
+                min_f = explor;
+                ap = it->first;
 #ifdef QNN_DEBUG_BREL
-              rel = q_spap;
+                rel = q_spap;
 #endif
-            }
-        }
+              }
+          }
 
-
+      }
 
 #ifdef QNN_DEBUG
     relevance = ( rel - sum/ ( ( double ) prcps.size() ) ) / ( b-a );
@@ -1019,7 +1026,7 @@ public:
     TripletNode *p = tree->getChild ( triplet );
     if ( !p )
       {
-        if ( depth < 7 )
+        if ( depth < 10 )
           {
             TripletNode *tn = new TripletNode ( triplet );
             tree->setChild ( triplet, tn );
@@ -1070,7 +1077,7 @@ private:
     std::map<SPOTriplet, TripletNode*> & getChildren ()
     {
       return children;
-    }    
+    }
     SPOTriplet getTriplet () const
     {
       return triplet;
@@ -1086,6 +1093,9 @@ private:
   TripletNode root;
   TripletNode *tree;
   int depth {0};
+
+  std::random_device zinit;
+  std::default_random_engine zgen {zinit() };
 
   void debug_tree ( TripletNode * node, std::ostream & os )
   {
