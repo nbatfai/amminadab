@@ -245,6 +245,8 @@ int main ( int argc, char **argv )
   double prev_mbrel {0};
   int mbrelc {0};
   int mbrelc2 {0};
+  int prev_bad{0};
+  
 
 #ifdef SUPER_OR_REMOTE_COMP
   //for ( int ii {0}; samu.run() && ii < 1000 + 4000 + 5000 + 4000 + 1000; ++ii )
@@ -410,10 +412,13 @@ int main ( int argc, char **argv )
               mbrelc2 = 0;
           */
 
-          if ( fabs ( prev_mbrel - mbrel ) < 1.0 )
+          if ( fabs ( prev_mbrel - mbrel ) < 1.0 && prev_bad == bad)
             ++mbrelc;
           else
             mbrelc = 0;
+	  
+           prev_bad = bad;
+	  
           /*
                     if ( fabs ( prev_mbrel - mbrel ) < .2 )
                       ++mbrelc2;
