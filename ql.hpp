@@ -397,6 +397,41 @@ public:
 
     return min_q_spap;
   }
+
+  double max_ap_Q_sp_ap_lzw ( double image[] )
+  {
+    double q_spap;
+    double min_q_spap = -std::numeric_limits<double>::max();
+
+    std::map<SPOTriplet, TripletNode*> children = tree->getChildren();
+
+    int rN = children.size();
+
+    //std::uniform_int_distribution<int> zdist ( 0, rN+1+rN/10 );
+    //std::uniform_int_distribution<int> zdist ( 0, 100 );
+    //if ( zdist ( zgen ) < rN )
+    //if ( rN && zdist ( zgen ) < 95)
+    if ( rN )
+      for ( std::map<SPOTriplet, TripletNode*>::iterator it=children.begin(); it!=children.end(); ++it )
+        {
+
+          q_spap = ( * ( prcps[it->first] ) ) ( image );
+          if ( q_spap > min_q_spap )
+            min_q_spap = q_spap;
+        }
+
+    else
+      for ( std::map<SPOTriplet, Perceptron*>::iterator it=prcps.begin(); it!=prcps.end(); ++it )
+        {
+
+          q_spap = ( * ( it->second ) ) ( image );
+          if ( q_spap > min_q_spap )
+            min_q_spap = q_spap;
+        }
+
+    return min_q_spap;
+  }
+
 #ifdef FEELINGS
   double max_ap_Q_sp_ap_f ( double image[] )
   {
