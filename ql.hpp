@@ -398,6 +398,7 @@ public:
     return min_q_spap;
   }
 
+#ifdef LZW_TREE
   double max_ap_Q_sp_ap_lzw ( double image[] )
   {
     double q_spap;
@@ -431,6 +432,7 @@ public:
 
     return min_q_spap;
   }
+#endif
 
 #ifdef FEELINGS
   double max_ap_Q_sp_ap_f ( double image[] )
@@ -450,7 +452,7 @@ public:
   }
 #endif
 
-
+#ifdef LZW_TREE
   SPOTriplet argmax_ap_f_lzw ( std::string prg, double image[] )
   {
     double min_f = -std::numeric_limits<double>::max();
@@ -500,6 +502,12 @@ public:
 #endif
               }
           }
+
+#ifdef QNN_DEBUG
+        relevance = ( rel - sum/ ( ( double ) children.size() ) ) / ( b-a );
+#endif
+
+
       }
     else
       {
@@ -528,15 +536,16 @@ public:
               }
           }
 
+#ifdef QNN_DEBUG
+        relevance = ( rel - sum/ ( ( double ) prcps.size() ) ) / ( b-a );
+#endif
+
       }
 
-#ifdef QNN_DEBUG
-    relevance = ( rel - sum/ ( ( double ) prcps.size() ) ) / ( b-a );
-#endif
 
     return ap;
   }
-
+#endif
 
   SPOTriplet argmax_ap_f ( std::string prg, double image[] )
   {
@@ -734,8 +743,14 @@ public:
 
           }
 
+
 //        action = argmax_ap_f ( prg, image );
+#ifdef LZW_TREE
         action = argmax_ap_f_lzw ( prg, image );
+#else
+        action = argmax_ap_f ( prg, image );
+#endif
+
 #ifdef FEELINGS
         feeling = argmax_ap_f_f ( prg, image );
 #endif
