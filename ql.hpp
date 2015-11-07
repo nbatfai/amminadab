@@ -376,6 +376,11 @@ public:
 
   int get_action_relevance() const
   {
+    /*
+    double whole;
+    modf (relevance*100.0 , &whole);
+    return whole;
+    */    
     return relevance*100.0;
   }
 #endif
@@ -504,9 +509,11 @@ public:
           }
 
 #ifdef QNN_DEBUG
-        relevance = ( rel - sum/ ( ( double ) children.size() ) ) / ( b-a );
+	if(b == a)
+        relevance = 1.0 - ( rel - sum/ ( ( double ) children.size() ) );		
+	else
+        relevance = ( rel - sum/ ( ( double ) children.size() ) ) / ( b-a );			  
 #endif
-
 
       }
     else
