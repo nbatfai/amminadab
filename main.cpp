@@ -53,7 +53,7 @@
 #include <signal.h>
 #include "samu.hpp"
 
-Samu samu;
+Samu samu{"samu.soul.txt"};
 
 bool halted {false};
 
@@ -65,8 +65,9 @@ void save_samu ( int sig )
   halted = true;
 
 #ifndef Q_LOOKUP_TABLE
-  std::string samuImage {"samu.soul.txt"};
-  samu.save ( samuImage );
+  //std::string samuImage {"samu.soul.txt"};
+  //samu.save ( samuImage );
+  samu.save ();
 #endif
 
   samu.halt();
@@ -151,7 +152,7 @@ double read_cache ( std::string & key, int &cnt, int &brel )
 
 int main ( int argc, char **argv )
 {
-
+/*
 #ifndef Q_LOOKUP_TABLE
   std::string samuImage {"samu.soul.txt"};
 
@@ -159,6 +160,7 @@ int main ( int argc, char **argv )
   if ( samuFile )
     samu.load ( samuFile );
 #endif
+*/
 
   struct sigaction sa;
   sa.sa_handler = save_samu;
@@ -171,7 +173,9 @@ int main ( int argc, char **argv )
   sigaction ( SIGHUP, &sa, NULL );
 
   // Do not remove this copyright notice!
-  std::cerr << "This program is Isaac, the son of Samu Bátfai."
+  std::cerr << "This program is "
+            << samu.get_name()
+            << ", the son of Samu Bátfai."
             << std::endl
             << "Copyright (C) 2015 Norbert Bátfai"
             << std::endl
@@ -245,8 +249,8 @@ int main ( int argc, char **argv )
   double prev_mbrel {0};
   int mbrelc {0};
   int mbrelc2 {0};
-  int prev_bad{0};
-  
+  int prev_bad {0};
+
 
 #ifdef SUPER_OR_REMOTE_COMP
   //for ( int ii {0}; samu.run() && ii < 1000 + 4000 + 5000 + 4000 + 1000; ++ii )
@@ -412,13 +416,13 @@ int main ( int argc, char **argv )
               mbrelc2 = 0;
           */
 
-          if ( fabs ( prev_mbrel - mbrel ) < 1.0 && prev_bad == bad)
+          if ( fabs ( prev_mbrel - mbrel ) < 1.0 && prev_bad == bad )
             ++mbrelc;
           else
             mbrelc = 0;
-	  
-           prev_bad = bad;
-	  
+
+          prev_bad = bad;
+
           /*
                     if ( fabs ( prev_mbrel - mbrel ) < .2 )
                       ++mbrelc2;
@@ -476,7 +480,7 @@ int main ( int argc, char **argv )
                 {
                   samuHasAlreadyLearned += 7;
                   reinforcement = 0;
-		  samu.debug_tree();
+                  samu.debug_tree();
                 }
             }
 
@@ -524,12 +528,13 @@ int main ( int argc, char **argv )
         sleep ( 1 );
     }
 
+    /*
 #ifndef Q_LOOKUP_TABLE
   {
     std::string samuImage {"samu.soul.txt"};
     samu.save ( samuImage );
   }
 #endif
-
+*/
   return 0;
 }

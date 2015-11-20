@@ -86,13 +86,27 @@ class Samu
 {
 public:
 
-  Samu()
+  Samu (const char* soul ) :soul ( soul )
   {
+#ifndef Q_LOOKUP_TABLE
+
+    std::fstream samuFile ( soul,  std::ios_base::in );
+    if ( samuFile )
+      load ( samuFile );
+#endif
+
+
     cv_.notify_one();
   }
 
   ~Samu()
   {
+#ifndef Q_LOOKUP_TABLE
+    {
+      save ( soul );
+    }
+#endif
+
     run_ = false;
     terminal_thread_.join();
     network_thread_.join();
@@ -254,6 +268,11 @@ public:
     return vi.reward();
   }
 
+  void save ( )
+  {  
+        save ( soul );
+  }
+  
   void save ( std::string & fname )
   {
 #ifdef DISP_CURSES
@@ -279,6 +298,11 @@ public:
     return training_file;
   }
 
+  std::string get_name() const
+  {
+    return name;
+  }
+  
   void set_training_file ( const std::string& filename )
   {
     training_file = filename;
@@ -619,8 +643,8 @@ private:
 
       std::cerr << r << std::endl;
 
-      std::string nr = response.s + ' ' + response.p + ' ' + response.o; 
-      if ( samu.net.has_session() && !samu.sleep_)
+      std::string nr = response.s + ' ' + response.p + ' ' + response.o;
+      if ( samu.net.has_session() && !samu.sleep_ )
         samu.net.write_session ( nr );
 
 #ifdef DISP_CURSES
@@ -728,16 +752,18 @@ private:
 
   };
 
+  std::string soul;
+
 #ifdef DISP_CURSES
   static Disp disp;
 #endif
 
   static Net net;
 
-  static std::string name;
+  /*static*/ std::string name {"Amminadab"};
 
   SamuState state = SLEEP;
-  
+
   bool run_ {true};
   bool sleep_ {true};
   int sleep_after_ {160};

@@ -56,7 +56,7 @@
 
 #include <ncurses.h>
 
-std::string Samu::name {"Amminadab"};
+//std::string Samu::name {"Amminadab"};
 
 Net Samu::net;
 
