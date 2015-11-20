@@ -86,7 +86,7 @@ class Samu
 {
 public:
 
-  Samu (const char* soul ) :soul ( soul )
+  Samu ( const char* soul ) :soul ( soul )
   {
 #ifndef Q_LOOKUP_TABLE
 
@@ -95,8 +95,8 @@ public:
       load ( samuFile );
 #endif
 
-
-    cv_.notify_one();
+    std::unique_lock<std::mutex> lk ( mutex_ );
+    cv_.notify_all();
   }
 
   ~Samu()
@@ -142,26 +142,21 @@ public:
   void NetworkCaregiverShell ( void );
   void terminal ( void )
   {
-    std::cerr << " SSS T0 " << std::endl;
-    /*
-        std::unique_lock<std::mutex> lk ( mutex_ );
-        cv_.wait ( lk );
-    */
-    std::cerr << " SSS T1 " << std::endl;
 
+    {
+      std::unique_lock<std::mutex> lk ( mutex_ );
+      cv_.wait ( lk );
+    }
 
     FamilyCaregiverShell();
   }
   void network ( void )
   {
-    std::cerr << " SSS0 " << std::endl;
-    /*
-        std::unique_lock<std::mutex> lk ( mutex_ );
-        cv_.wait ( lk );
-    */
-    std::cerr << " SSS1 " << std::endl;
 
-
+    {
+      std::unique_lock<std::mutex> lk ( mutex_ );
+      cv_.wait ( lk );
+    }
 
     net.start_server ( 5555 );
     NetworkCaregiverShell();
@@ -269,10 +264,10 @@ public:
   }
 
   void save ( )
-  {  
-        save ( soul );
+  {
+    save ( soul );
   }
-  
+
   void save ( std::string & fname )
   {
 #ifdef DISP_CURSES
@@ -302,7 +297,7 @@ public:
   {
     return name;
   }
-  
+
   void set_training_file ( const std::string& filename )
   {
     training_file = filename;
