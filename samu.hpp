@@ -158,7 +158,9 @@ public:
       cv_.wait ( lk );
     }
 
+#ifdef NETCHAT    
     net.start_server ( 5555 );
+#endif    
     NetworkCaregiverShell();
   }
 
@@ -638,10 +640,12 @@ private:
 
       std::cerr << r << std::endl;
 
+#ifdef NETCHAT      
       std::string nr = response.s + ' ' + response.p + ' ' + response.o;
       if ( samu.net.has_session() && !samu.sleep_ )
         samu.net.write_session ( nr );
-
+#endif
+      
 #ifdef DISP_CURSES
       samu.disp.log ( r );
 #endif
@@ -753,7 +757,9 @@ private:
   static Disp disp;
 #endif
 
+#ifdef NETCHAT    
   static Net net;
+#endif
 
   std::string name;
 

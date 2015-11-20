@@ -181,6 +181,16 @@ void Samu::NetworkCaregiverShell ( void )
   run_ = false;
 }
 
+#else
+
+void Samu::NetworkCaregiverShell ( void )
+{
+  for ( ; run_ ; )
+    usleep ( read_usec_ );
+
+  run_ = false;
+}
+
 #endif
 
 #ifdef DISP_CURSES
