@@ -86,7 +86,7 @@ class Samu
 {
 public:
 
-  Samu ( const char* soul ) :soul ( soul )
+  Samu ( const char* name, const char* soul ) : name(name), soul ( soul )
   {
 #ifndef Q_LOOKUP_TABLE
 
@@ -755,7 +755,7 @@ private:
 
   static Net net;
 
-  /*static*/ std::string name {"Amminadab"};
+  std::string name;
 
   SamuState state = SLEEP;
 

@@ -53,7 +53,7 @@
 #include <signal.h>
 #include "samu.hpp"
 
-Samu samu{"samu.soul.txt"};
+Samu samu{"Amminadab", "samu.soul.txt"};
 
 bool halted {false};
 
