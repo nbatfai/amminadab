@@ -58,15 +58,12 @@
 
 std::string Samu::name {"Amminadab"};
 
-#ifdef DISP_CURSES
-Disp Samu::disp;
+Net Samu::net;
 
-void Samu::FamilyCaregiverShell ( void )
+void Samu::NetworkCaregiverShell ( void )
 {
-  std::string cmd_prefix = "cmd";
 
-  fd_set rfds;
-  struct timeval tmo;
+  std::string cmd_prefix = "cmd";
 
   int sleep {0};
 
@@ -80,20 +77,25 @@ void Samu::FamilyCaregiverShell ( void )
       try
         {
 
-          disp.cg_read();
+          net.cg_read();
 
           if ( ++sleep > sleep_after_ )
             {
-              if ( !sleep_ )
+              //if ( !sleep_ && state != TERMINAL )
+              if ( state == NETWORK )
                 {
                   std::cerr << "Isaac went to sleep." << std::endl;
                   disp.log ( "I went to sleep." );
+                  sleep_ = true;
+                  state = SLEEP;
                 }
-              sleep_ = true;
+              sleep = sleep_after_ + 1;
+
             }
-          else
+          //else if ( state != TERMINAL )
+          else if ( state == NETWORK )
             {
-              std::cerr << sleep << " " << std::flush;
+              std::cerr << sleep << " *** " << std::flush;
 
               int sec = ( sleep * read_usec_ ) / ( 1000*1000 );
               if ( sec != prev_sec )
@@ -114,45 +116,162 @@ void Samu::FamilyCaregiverShell ( void )
       catch ( std::string line )
         {
 
-          if ( sleep_ )
+          if ( state != TERMINAL )
             {
-              std::cerr << "Isaac is awake now." << std::endl;
-              disp.log ( "I am awake now." );
-            }
-          sleep_ = false;
-          sleep = 0;
-
-          if ( !line.compare ( 0, cmd_prefix.length(), cmd_prefix ) )
-            {
-              std::string readCmd {"cmd read"};
-
-              size_t f = line.find ( readCmd );
-              if ( f != std::string::npos )
+              if ( sleep_ )
                 {
-                  f = f+readCmd.length() +1;
-                  if ( f < line.length() )
+                  std::cerr << "Isaac is awake now." << std::endl;
+                  disp.log ( "I am awake now." );
+                }
+              sleep_ = false;
+              sleep = 0;
+              state = NETWORK;
+
+              if ( !line.compare ( 0, cmd_prefix.length(), cmd_prefix ) )
+                {
+                  std::string readCmd {"cmd read"};
+
+                  size_t f = line.find ( readCmd );
+                  if ( f != std::string::npos )
                     {
-                      std::string fname = line.substr ( f );
-                      set_training_file ( fname );
+                      f = f+readCmd.length() +1;
+                      if ( f < line.length() )
+                        {
+                          std::string fname = line.substr ( f );
+                          set_training_file ( fname );
+                        }
                     }
+                  else
+                    NextCaregiver();
                 }
               else
-                NextCaregiver();
-            }
-          else
-            {
-              try
                 {
-                  sentence ( -1, line );
-                }
-              catch ( const char* err )
-                {
-                  std::cerr << err << std::endl;
-                  disp.log ( err );
+                  std::istringstream iss ( line );
+                  SPOTriplet t;
+                  iss >> t;
+
+                  SPOTriplets tv;
+                  tv.push_back ( t );
+
+                  try
+                    {
+                      //sentence ( -1, line );
+                      triplet ( -1000, tv );
+                    }
+                  catch ( const char* err )
+                    {
+                      std::cerr << err << std::endl;
+                      disp.log ( err );
+                    }
                 }
             }
         }
 
+      usleep ( read_usec_ );
+
+    }
+
+  run_ = false;
+}
+
+#ifdef DISP_CURSES
+Disp Samu::disp;
+
+void Samu::FamilyCaregiverShell ( void )
+{
+  std::string cmd_prefix = "cmd";
+
+  int sleep {0};
+
+  if ( sleep_ )
+    sleep = sleep_after_ + 1;
+
+  int prev_sec {0};
+  for ( ; run_ ; )
+    {
+
+      try
+        {
+
+          disp.cg_read();
+
+          if ( ++sleep > sleep_after_ )
+            {
+              if ( state == TERMINAL )
+                {
+                  std::cerr << "Isaac went to sleep." << std::endl;
+                  disp.log ( "I went to sleep." );
+                  sleep_ = true;
+                  state = SLEEP;
+                }
+              sleep = sleep_after_ + 1;
+
+            }
+          else if ( state == TERMINAL )
+            {
+              std::cerr << sleep << " +++" << std::flush;
+
+              int sec = ( sleep * read_usec_ ) / ( 1000*1000 );
+              if ( sec != prev_sec )
+                {
+                  int after = ( sleep_after_ * read_usec_ ) / ( 1000*1000 );
+
+                  std::stringstream sleep_after;
+
+                  sleep_after << "I will go to sleep after ";
+                  sleep_after << ( after-sec );
+                  sleep_after <<  " seconds";
+
+                  disp.log ( sleep_after.str() );
+                  prev_sec = sec;
+                }
+            }
+        }
+      catch ( std::string line )
+        {
+          if ( state != NETWORK )
+            {
+
+              if ( sleep_ )
+                {
+                  std::cerr << "Isaac is awake now." << std::endl;
+                  disp.log ( "I am awake now." );
+                }
+              sleep_ = false;
+              sleep = 0;
+              state = TERMINAL;
+
+              if ( !line.compare ( 0, cmd_prefix.length(), cmd_prefix ) )
+                {
+                  std::string readCmd {"cmd read"};
+
+                  size_t f = line.find ( readCmd );
+                  if ( f != std::string::npos )
+                    {
+                      f = f+readCmd.length() +1;
+                      if ( f < line.length() )
+                        {
+                          std::string fname = line.substr ( f );
+                          set_training_file ( fname );
+                        }
+                    }
+                  else
+                    NextCaregiver();
+                }
+              else
+                {
+                  try
+                    {
+                      sentence ( -1, line );
+                    }
+                  catch ( const char* err )
+                    {
+                      std::cerr << err << std::endl;
+                      disp.log ( err );
+                    }
+                }
+            }
+        }
       usleep ( read_usec_ );
 
     }
@@ -165,7 +284,7 @@ void Samu::FamilyCaregiverShell ( void )
 void Samu::FamilyCaregiverShell ( void )
 {
   for ( ; run_ ; )
-      usleep ( read_usec_ );
+    usleep ( read_usec_ );
 
   run_ = false;
 }

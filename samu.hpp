@@ -64,6 +64,7 @@
 
 #include "nlp.hpp"
 #include "ql.hpp"
+#include "net.hpp"
 
 #ifndef CHARACTER_CONSOLE
 #include <pngwriter.h>
@@ -79,6 +80,8 @@
 #include <cctype>
 #include <cmath>
 
+enum SamuState {SLEEP, TERMINAL, NETWORK};
+
 class Samu
 {
 public:
@@ -92,6 +95,7 @@ public:
   {
     run_ = false;
     terminal_thread_.join();
+    network_thread_.join();
   }
 
   bool run ( void ) const
@@ -121,12 +125,32 @@ public:
   }
 
   void FamilyCaregiverShell ( void );
+  void NetworkCaregiverShell ( void );
   void terminal ( void )
   {
-    std::unique_lock<std::mutex> lk ( mutex_ );
-    cv_.wait ( lk );
+    std::cerr << " SSS T0 " << std::endl;
+    /*
+        std::unique_lock<std::mutex> lk ( mutex_ );
+        cv_.wait ( lk );
+    */
+    std::cerr << " SSS T1 " << std::endl;
+
 
     FamilyCaregiverShell();
+  }
+  void network ( void )
+  {
+    std::cerr << " SSS0 " << std::endl;
+    /*
+        std::unique_lock<std::mutex> lk ( mutex_ );
+        cv_.wait ( lk );
+    */
+    std::cerr << " SSS1 " << std::endl;
+
+
+
+    net.start_server ( 5555 );
+    NetworkCaregiverShell();
   }
 
   void sentence ( int id, std::string & sentence, std::string & file )
@@ -595,6 +619,10 @@ private:
 
       std::cerr << r << std::endl;
 
+      std::string nr = response.s + ' ' + response.p + ' ' + response.o; 
+      if ( samu.net.has_session() && !samu.sleep_)
+        samu.net.write_session ( nr );
+
 #ifdef DISP_CURSES
       samu.disp.log ( r );
 #endif
@@ -703,8 +731,13 @@ private:
 #ifdef DISP_CURSES
   static Disp disp;
 #endif
+
+  static Net net;
+
   static std::string name;
 
+  SamuState state = SLEEP;
+  
   bool run_ {true};
   bool sleep_ {true};
   int sleep_after_ {160};
@@ -712,6 +745,7 @@ private:
   std::mutex mutex_;
   std::condition_variable cv_;
   std::thread terminal_thread_ {&Samu::terminal, this};
+  std::thread network_thread_ {&Samu::network, this};
 
   NLP nlp;
   VisualImagery vi {*this};

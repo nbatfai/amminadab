@@ -117,7 +117,7 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-find_package( Boost COMPONENTS date_time REQUIRED )  
+find_package( Boost COMPONENTS system date_time REQUIRED )  
 
 include_directories( ${Boost_INCLUDE_DIRS} ) 
 link_directories( ${Boost_LIBRARY_DIRS} )  
@@ -136,9 +136,9 @@ include_directories(${LINK_GRAMMAR_INCLUDE_DIRS})
 
 if (CUDA_FOUND)
   cuda_compile(CUDASRCS qlc.cu)
-  cuda_add_executable(samu ${CUDASRCS} nlp.hpp nlp.cpp qlc.h ql.hpp samu.hpp samu.cpp main.cpp disp.hpp )
+  cuda_add_executable(samu ${CUDASRCS} disp.hpp net.hpp nlp.hpp nlp.cpp qlc.h ql.hpp samu.hpp samu.cpp main.cpp )
 else()
-  add_executable(samu nlp.hpp nlp.cpp ql.hpp samu.hpp samu.cpp main.cpp  )
+                   add_executable(samu disp.hpp net.hpp nlp.hpp nlp.cpp       ql.hpp samu.hpp samu.cpp main.cpp  )
 endif()
 
 target_link_libraries(samu ${LINK_GRAMMAR_LIBRARIES} ${PNGwriter_LIBRARIES} ${Boost_LIBRARIES} ${CURSES_LIBRARIES})
