@@ -67,6 +67,8 @@ project(SAMU)
 
 # Amminadab
 add_definitions(-DLZW_TREE)
+add_definitions(-DNETCHAT)
+
   
 # Ram
 add_definitions(-DINCREMENTAL_CACHE)

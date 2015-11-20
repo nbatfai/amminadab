@@ -56,7 +56,8 @@
 
 #include <ncurses.h>
 
-//std::string Samu::name {"Amminadab"};
+
+#ifdef NETCHAT
 
 Net Samu::net;
 
@@ -179,6 +180,8 @@ void Samu::NetworkCaregiverShell ( void )
 
   run_ = false;
 }
+
+#endif
 
 #ifdef DISP_CURSES
 Disp Samu::disp;
