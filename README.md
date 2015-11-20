@@ -2,7 +2,7 @@
 "The son of Ram is Amminadab." Amminadab uses the Liv-Zempel-Welch tree to narrow the scope of selecting Q-actions.
 See also the page [Family Robotics - Deep Q-learning with Samu](http://shrek.unideb.hu/~nbatfai/)
 
-## Genealogy of Ram
+## Genealogy of Amminadab
 
 1. [Samu](https://github.com/nbatfai/samu)
 The main purpose of this project is to allow the evaluation and verification of the results of the paper entitled 
