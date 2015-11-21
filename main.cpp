@@ -53,7 +53,7 @@
 #include <signal.h>
 #include "samu.hpp"
 
-Samu samu{"Amminadab", "samu.soul.txt"};
+Samu samu {"Amminadab", "samu.soul.txt"};
 
 bool halted {false};
 
@@ -152,15 +152,15 @@ double read_cache ( std::string & key, int &cnt, int &brel )
 
 int main ( int argc, char **argv )
 {
-/*
-#ifndef Q_LOOKUP_TABLE
-  std::string samuImage {"samu.soul.txt"};
+  /*
+  #ifndef Q_LOOKUP_TABLE
+    std::string samuImage {"samu.soul.txt"};
 
-  std::fstream samuFile ( samuImage,  std::ios_base::in );
-  if ( samuFile )
-    samu.load ( samuFile );
-#endif
-*/
+    std::fstream samuFile ( samuImage,  std::ios_base::in );
+    if ( samuFile )
+      samu.load ( samuFile );
+  #endif
+  */
 
   struct sigaction sa;
   sa.sa_handler = save_samu;
@@ -528,13 +528,13 @@ int main ( int argc, char **argv )
         sleep ( 1 );
     }
 
-    /*
-#ifndef Q_LOOKUP_TABLE
+  /*
+  #ifndef Q_LOOKUP_TABLE
   {
-    std::string samuImage {"samu.soul.txt"};
-    samu.save ( samuImage );
+  std::string samuImage {"samu.soul.txt"};
+  samu.save ( samuImage );
   }
-#endif
-*/
+  #endif
+  */
   return 0;
 }

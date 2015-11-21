@@ -85,9 +85,9 @@ void Samu::NetworkCaregiverShell ( void )
               if ( state == NETWORK )
                 {
                   std::cerr << "Isaac went to sleep." << std::endl;
-#ifdef DISP_CURSES		  
+#ifdef DISP_CURSES
                   disp.log ( "I went to sleep." );
-#endif		  
+#endif
                   sleep_ = true;
                   state = SLEEP;
                 }
@@ -109,9 +109,9 @@ void Samu::NetworkCaregiverShell ( void )
                   sleep_after << ( after-sec );
                   sleep_after <<  " seconds";
 
-#ifdef DISP_CURSES		  
+#ifdef DISP_CURSES
                   disp.log ( sleep_after.str() );
-#endif		  
+#endif
                   prev_sec = sec;
                 }
             }
@@ -124,9 +124,9 @@ void Samu::NetworkCaregiverShell ( void )
               if ( sleep_ )
                 {
                   std::cerr << "Isaac is awake now." << std::endl;
-#ifdef DISP_CURSES		  
+#ifdef DISP_CURSES
                   disp.log ( "I am awake now." );
-#endif		  
+#endif
                 }
               sleep_ = false;
               sleep = 0;
@@ -166,9 +166,9 @@ void Samu::NetworkCaregiverShell ( void )
                   catch ( const char* err )
                     {
                       std::cerr << err << std::endl;
-#ifdef DISP_CURSES		      
+#ifdef DISP_CURSES
                       disp.log ( err );
-#endif		      
+#endif
                     }
                 }
             }

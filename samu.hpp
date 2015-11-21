@@ -86,7 +86,7 @@ class Samu
 {
 public:
 
-  Samu ( const char* name, const char* soul ) : name(name), soul ( soul )
+  Samu ( const char* name, const char* soul ) : name ( name ), soul ( soul )
   {
 #ifndef Q_LOOKUP_TABLE
 
@@ -158,9 +158,9 @@ public:
       cv_.wait ( lk );
     }
 
-#ifdef NETCHAT    
+#ifdef NETCHAT
     net.start_server ( 5555 );
-#endif    
+#endif
     NetworkCaregiverShell();
   }
 
@@ -640,12 +640,12 @@ private:
 
       std::cerr << r << std::endl;
 
-#ifdef NETCHAT      
+#ifdef NETCHAT
       std::string nr = response.s + ' ' + response.p + ' ' + response.o;
       if ( samu.net.has_session() && !samu.sleep_ )
         samu.net.write_session ( nr );
 #endif
-      
+
 #ifdef DISP_CURSES
       samu.disp.log ( r );
 #endif
@@ -757,7 +757,7 @@ private:
   static Disp disp;
 #endif
 
-#ifdef NETCHAT    
+#ifdef NETCHAT
   static Net net;
 #endif
 
